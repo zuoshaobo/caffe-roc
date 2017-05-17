@@ -1,25 +1,29 @@
 import sys
 import numpy as np
+import copy
+caffe_root = '/home/pub/Work/BWN-XNOR-caffe'
+
+import sys
+sys.path.insert(0, caffe_root + 'python')
 import caffe
+import skimage.io
 
 
 def readDeepNet(trainNet_path, caffemodel_path, proj_root):
-    caffe.set_mode_cpu()
-    net = caffe.Net(trainNet_path,
-                    caffemodel_path,
-                    caffe.TEST)
+    net = caffe.Classifier(trainNet_path, caffemodel_path)
 
     # input preprocessing: 'data' is the name of the input blob == net.inputs[0]
     transformer = caffe.io.Transformer({'data': net.blobs['data'].data.shape})
     transformer.set_transpose('data', (2, 0, 1))
-    transformer.set_mean('data', np.load(meanFile_path).mean(1).mean(1))  # mean pixel
-    transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
-    transformer.set_channel_swap('data', (2, 1, 0))  # the reference model has channels in BGR order instead of RGB, if you are working on gray model, comment this line
+    #transformer.set_raw_scale('data', 255)  # the reference model operates on images in [0,255] range instead of [0,1]
+    #transformer.set_channel_swap('data',(2,1,0))
 
     return (net, transformer)
 
 
 def extract_feature(net, transformer, filelist, dimension, imageSize):
+    caffe.set_device(0)
+    caffe.set_mode_gpu()
     file = open(filelist)
 
     nan = np.empty(shape=[0, dimension])
@@ -30,13 +34,29 @@ def extract_feature(net, transformer, filelist, dimension, imageSize):
         if not line:
             break
         pass
+        
         spaceIndex = line.find(" ")
         imagePath = line[0:spaceIndex]
         thisLabel = int(line[spaceIndex + 1:len(line)])
-        net.blobs['data'].reshape(1, 3, imageSize, imageSize)
-        net.blobs['data'].data[...] = transformer.preprocess('data', caffe.io.load_image(imagePath, color=True))
+	imagePath='/home/pub/samba/lfw_aligned/'+imagePath
+	print  imagePath,thisLabel
+
+        #img = caffe.io.load_image(imagePath, color = True)
+	#'''
+        img = caffe.io.load_image(imagePath, color = False)
+        if  img.shape[2] != 1:
+            img = skimage.color.rgb2gray(img)
+            img = img[:, :, np.newaxis]
+	#'''
+	net.blobs['data'].data[0]=transformer.preprocess('data',img)
+
         out = net.forward()
-        feat = net.blobs['fc160'].data[0] # 'fc160' is the layer name in caffemodel, edit this arguments base on your own model
+	#print tmp.data[0]
+        feat = net.blobs['eltwise_fc1'].data[0] # 'fc160' is the layer name in caffemodel, edit this arguments base on your own model
+        #feat = net.blobs['fc7'].data[0] # 'fc160' is the layer name in caffemodel, edit this arguments base on your own model
+	#print feat.size
+	#exit(0)
+	fea=copy.deepcopy(feat)
 
         nan = np.vstack((nan, feat))
         _label = np.vstack((_label, thisLabel))

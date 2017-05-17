@@ -115,6 +115,13 @@ def Verify(x1, x2):
     ratio =np.dot(np.transpose(x1), x2) / np.sqrt(np.dot(np.transpose(x1),x1) * np.dot(np.transpose(x2),x2))
 
     return float(ratio)
+def Verify2(x1, x2):
+    x1.shape = (-1,1)
+    x2.shape = (-1,1)
+
+    dist = np.linalg.norm(x1 - x2)  
+
+    return float(dist)
 
 def PCA_Train(data, result_fold, n_components=160):
     print_info("PCA training (n_components=%d)..."%n_components)
@@ -138,9 +145,25 @@ def get_ratios(pair_list, data):
     distance = []
     for pair in pair_list:
         ratio = Verify(data[pair[0]], data[pair[1]])
+        #ratio = Verify2(data[pair[0]], data[pair[1]])
         distance.append(ratio)
 
     return distance
+
+def VerifyJoint(A, G, x1, x2):
+	x1.shape = (-1,1)
+	x2.shape = (-1,1)
+	ratio = np.dot(np.dot(np.transpose(x1),A),x1) + np.dot(np.dot(np.transpose(x2),A),x2) - 2*np.dot(np.dot(np.transpose(x1),G),x2)
+	return float(ratio)
+
+def get_ratiosJoint(A, G, pair_list, data):
+    distance = []
+    for pair in pair_list:
+    	ratio = VerifyJoint(A, G, data[pair[0]], data[pair[1]])
+    	distance.append(ratio)
+
+    return distance
+
 
 def excute_performance(file_path, t_s, t_e, t_step):
     with open(file_path, "rb") as f:
@@ -151,8 +174,11 @@ def excute_performance(file_path, t_s, t_e, t_step):
         print "test size: ", y.shape
         print "negative size: ", y[y==0].shape
         print "postive size: ",  y[y==1].shape
+	for d in dist:
+		print d
 
         draw_list = []
+	maxaccr=0
         while (t_s < t_e):
             # print dist
             pre = dist >= t_s
@@ -163,9 +189,27 @@ def excute_performance(file_path, t_s, t_e, t_step):
             print  acc
             print "threshold: ", t_s
             print report
+	    if acc>maxaccr:
+		    maxaccr=acc
 
             report_result = report_format(report)
             draw_list.append([report_result, t_s])
             t_s += t_step
 
         save_draw_file(draw_list)
+	print "accr:",maxaccr
+
+if __name__ == '__main__':
+	files='/home/pub/Work/face_verification_experiment/jointbayesianclassfytrain.txt'
+    	datas=[]
+    	labels=[]
+    	with open(files) as f:
+        	for line in f:
+            		tokens=line.strip().split()
+			datas.append(map(float,tokens[0:-1:1]))
+	    		labels.append(float(tokens[-1]))
+        data=np.array(datas)
+        label=np.array(labels)
+        print data.shape, label.shape,data.dtype
+	print labels[-1]
+	JointBayesian_Train(data,label)
