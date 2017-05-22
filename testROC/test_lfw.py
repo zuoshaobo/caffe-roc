@@ -66,6 +66,7 @@ def excute_test(pairlist, test_data):
 
 
     #joint bayasian
+    '''
     with open(result_fold+"A.pkl", "rb") as f:
     	A = pickle.load(f)
     with open(result_fold+"G.pkl", "rb") as f:
@@ -73,12 +74,13 @@ def excute_test(pairlist, test_data):
 
     dist_Intra = get_ratiosJoint(A,G,test_Intra, data)
     dist_Extra = get_ratiosJoint(A,G,test_Extra, data)
+    '''
 
 
 
    
-    #dist_Intra = get_ratios(test_Intra, data)
-    #dist_Extra = get_ratios(test_Extra, data)
+    dist_Intra = get_ratios(test_Intra, data)
+    dist_Extra = get_ratios(test_Extra, data)
 
     dist_all = dist_Intra + dist_Extra
     dist_all = np.asarray(dist_all)
