@@ -170,7 +170,6 @@ def excute_performance(file_path, t_s, t_e, t_step):
         result = pickle.load(f)
         dist = result['distance']
         y    = result['label']
-        print y
         print "test size: ", y.shape
         print "negative size: ", y[y==0].shape
         print "postive size: ",  y[y==1].shape

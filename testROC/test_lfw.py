@@ -18,9 +18,13 @@ def excute_test(pairlist, test_data):
     test_Extra = pair_list['Extra'][0][0] - 1
 
 
+    print  test_Intra.shape
+    print  test_Extra.shape
 
-    '''
-    pair_list = loadmat(pairlist)
+    data = np.load(test_data)
+
+    #'''
+    pair_list = loadmat("filelist/lfw_pairs.mat")
     a = pair_list['pos_pair'] - 1
     b = pair_list['neg_pair']- 1
     test_Intra=[]
@@ -32,19 +36,17 @@ def excute_test(pairlist, test_data):
 
     test_Intra=np.array(test_Intra)
     test_Extra=np.array(test_Extra)
-    '''
-
-
-
-
-
-
-
-
-    print  test_Intra.shape
-    print  test_Extra.shape
-
+    #data = np.load("feature/whatyouwant.npy")
     data = np.load(test_data)
+    #'''
+
+
+
+
+
+
+
+
 
 
 

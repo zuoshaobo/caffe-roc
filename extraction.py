@@ -86,4 +86,6 @@ if __name__ == "__main__":
 
         print(feature.shape)
         np.save(outputFileName, feature)
+	print "save finish"
+	print "save finish"
 
